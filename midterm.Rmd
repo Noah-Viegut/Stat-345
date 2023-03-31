@@ -1,0 +1,188 @@
+---
+title: "STAT 345 Midterm Project"
+font: 12pt
+date: "Due March 31"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+> "Our offense is like the Pythagorean Theorem. There is no answer!", *Shaquille O'Neal*
+```{r echo = FALSE, warning=FALSE}
+
+#The Background
+
+#Your role for the midterm project is that of data analyst intern at an NBA (professional basketball) team. Your direct supervisor (also part of the analytics team) has asked you to create a data visualization to illustrate how (or if) the team's shots have changed over time. After some initial clarifying questions, your supervisor confessed that they had seen some pretty cool shot charts at <http://savvastjortjoglou.com/nba-shot-sharts.html> and would like to extend the ideas a bit.
+
+#Your data for the midterm project may come from a variety of sources, including the NBA directly, as well as Basketball-Reference, HoopsHype, and others. There are several ways to access the data, but perhaps the simplest is through the `nbastatR` package, which serves as a wrapper (or set of helper functions) for these various data sources. There is a lot of potentially useful information that can be found using this package; unfortunately, the documentation is somewhat inconsistent. For example, the documentation at <https://www.rdocumentation.org/packages/nbastatR/versions/0.1.110202031> is pretty well-formatted and easy to navigate, but the current function names have changed a bit (see `?nbastatR` and click "Index"). (If you use the nbastatR package, you'll want to install the package using the following code. There are other packages with this type of data, though.)
+```
+
+```{r echo=FALSE, warning=FALSE, eval=FALSE}
+library(devtools)
+devtools::install_github("abresler/nbastatR")
+```
+
+```{r  echo=FALSE, warning=FALSE, message=FALSE}
+#Calling the required Libraries
+library(devtools)
+library(tidyverse)
+library("patchwork")
+library(nbastatR)
+
+#Changing the connection size to fit the large amount of data
+Sys.setenv("VROOM_CONNECTION_SIZE" = 131072 * 3)
+
+#Created 21 shot charts for 21 seasons
+Raptors2000 <- teams_shots(teams = "Toronto Raptors", seasons = 2000, measures = "FGA", return_message = F)
+Raptors2001 <- teams_shots(teams = "Toronto Raptors", seasons = 2001, measures = "FGA", return_message = F)
+Raptors2002 <- teams_shots(teams = "Toronto Raptors", seasons = 2002, measures = "FGA", return_message = F)
+Raptors2003 <- teams_shots(teams = "Toronto Raptors", seasons = 2003, measures = "FGA", return_message = F)
+Raptors2004 <- teams_shots(teams = "Toronto Raptors", seasons = 2004, measures = "FGA", return_message = F)
+Raptors2005 <- teams_shots(teams = "Toronto Raptors", seasons = 2005, measures = "FGA", return_message = F)
+Raptors2006 <- teams_shots(teams = "Toronto Raptors", seasons = 2006, measures = "FGA", return_message = F)
+Raptors2007 <- teams_shots(teams = "Toronto Raptors", seasons = 2007, measures = "FGA", return_message = F)
+Raptors2008 <- teams_shots(teams = "Toronto Raptors", seasons = 2008, measures = "FGA", return_message = F)
+Raptors2009 <- teams_shots(teams = "Toronto Raptors", seasons = 2009, measures = "FGA", return_message = F)
+Raptors2010 <- teams_shots(teams = "Toronto Raptors", seasons = 2010, measures = "FGA", return_message = F)
+Raptors2011 <- teams_shots(teams = "Toronto Raptors", seasons = 2011, measures = "FGA", return_message = F)
+Raptors2012 <- teams_shots(teams = "Toronto Raptors", seasons = 2012, measures = "FGA", return_message = F)
+Raptors2013 <- teams_shots(teams = "Toronto Raptors", seasons = 2013, measures = "FGA", return_message = F)
+Raptors2014 <- teams_shots(teams = "Toronto Raptors", seasons = 2014, measures = "FGA", return_message = F)
+Raptors2015 <- teams_shots(teams = "Toronto Raptors", seasons = 2015, measures = "FGA", return_message = F)
+Raptors2016 <- teams_shots(teams = "Toronto Raptors", seasons = 2016, measures = "FGA", return_message = F)
+Raptors2017 <- teams_shots(teams = "Toronto Raptors", seasons = 2017, measures = "FGA", return_message = F)
+Raptors2018 <- teams_shots(teams = "Toronto Raptors", seasons = 2018, measures = "FGA", return_message = F)
+Raptors2019 <- teams_shots(teams = "Toronto Raptors", seasons = 2019, measures = "FGA", return_message = F)
+Raptors2020 <- teams_shots(teams = "Toronto Raptors", seasons = 2020, measures = "FGA", return_message = F)
+
+#Binding all 21 years of data into one object
+Raptors21Years <- bind_rows(Raptors2000, Raptors2001, Raptors2002, Raptors2003, Raptors2004, Raptors2005, Raptors2006, Raptors2007, Raptors2008, Raptors2009, Raptors2010, Raptors2011, Raptors2012, Raptors2013, Raptors2014, Raptors2015, Raptors2016, Raptors2017, Raptors2018, Raptors2019, Raptors2020)
+```
+
+```{r echo = FALSE, warning=FALSE}
+
+#The Tasks
+
+#1.  (30 points) Produce a graphic displaying the shot locations for a particular team over several years. Some notes:
+
+#    -   Colors should be chosen to reflect the team, if possible.
+#    -   There are likely many overlaid points -- handle this by either binning these by location, or use opacity.
+#    -   Incorporate information about whether the shot was made or not (shape, color, etc.).
+#    -   The graphic should be well-labeled, titled, etc.
+#   -   Start with a graph for a single year, then extend to several years. Up to 20 years of #shot data is available. Either facet these by year or animate using the years.
+#   -   You'll want to figure out what the coordinates mean somehow. This might be through the documentation, but could also be determined using aspects of the data itself and the dimensions of an NBA court.
+#    -   If possible, try to put a basketball court on the background of the image (you'll need to scale it appropriately).
+```
+
+```{r fig.height=8, fig.width=10,  echo=FALSE, warning=FALSE}
+#Loading the libraries required
+library("jpeg")
+library("ggplot2")
+library("grid")
+
+#Creating and calling the background image
+court <- "RaptorsCourt.jpg"
+court1 <- readJPEG(court, native = TRUE)
+court2 <- rasterGrob(court1, interpolate=TRUE)
+
+#Creating the ggplot
+p <- Raptors21Years %>% ggplot(aes(locationX, locationY, color = isShotMade))
+Final_ggplot <- p + 
+  annotation_custom(court2, xmin=-251, xmax=247, ymin=-60) +
+  geom_point(size = .25) +
+  scale_color_manual(values = c("black", "red"), name = "Shot Result", labels=c('Missed', 'Made')) + 
+  xlab("Distance from hoop by 10th of an inch") + ylab("Distance from hoop by 10th of an inch") + 
+  ggtitle("2000-2020 Toronto Raptors Shot Charts") +
+  facet_wrap(~yearSeason, nrow = 3, scale = "fixed")
+
+#Print the ggplot
+Final_ggplot
+ 
+```
+
+
+```{r echo=FALSE, warning=FALSE}
+#For part four. I use it in part three so it needs to be above part three.
+#Creating three histograms to plot the shot distance over 21 years
+#labs() handles all the labels
+#theme(legend.position = "none") removed legends because for some reason there were legends.
+
+#This graphic shows the shot distance of each shot taken from 2000-2020. The longest 1% of shots were removed because they were outliers and made the graphic ugly.
+R21 <- Raptors21Years %>% ggplot(aes(distanceShot, fill=yearSeason)) + 
+  geom_histogram(binwidth = 1, color = "red") + 
+   labs( title = "2000-2020 Raptors Shot Distance", x = "Shot Distance in Feet", y = "Number of Shots") +
+  theme(legend.position = "none") +
+  coord_cartesian(xlim = quantile(Raptors2020$distanceShot, c(0, .99)))
+
+#This graphic shows the shot distance of each shot taken in 2000 season. The longest 1% of shots were removed because they were outliers and made the graphic ugly.
+R00 <- Raptors2000 %>% ggplot(aes(distanceShot, fill=yearSeason)) + 
+  geom_histogram(binwidth = 1, color = "red") + 
+  labs( title = "2000 Raptors Shot Distance", x = "Shot Distance in Feet", y = "Number of Shots") +
+  theme(legend.position = "none") +
+  coord_cartesian(xlim = quantile(Raptors2000$distanceShot, c(0, .99)))
+
+#This graphic shows the shot distance of each shot taken in the 2020 season. The longest 1% of shots were removed because they were outliers and made the graphic ugly.
+R20 <- Raptors2020 %>% ggplot(aes(distanceShot, fill=yearSeason), show.legend = FALSE) + 
+  geom_histogram(binwidth = 1, color = "red") + 
+  labs( title = "2020 Raptors Shot Distance", x = "Shot Distance in Feet", y = "Number of Shots") +
+  theme(legend.position = "none") +
+  coord_cartesian(xlim = quantile(Raptors2020$distanceShot, c(0, .99)))
+R21
+R00
+R20
+```
+
+```{r echo = FALSE, warning=FALSE}
+#2.  (30 points) Summarize the graphic/series of graphics into a digestible, bullet-point brief report for front-office staff. Some notes:
+
+#    -   The main body of the report should be very brief -- just the graphic(s) and the bullet-pointed list of findings, which should be short and clear.
+#    -   Include a more detailed explanation of these bullet points, for further reading by those interested. This section should follow the bullet-point section, but should be organized similarly for reference.
+#    -   Your report to the front-office shouldn't include any code.
+#    -   This report should be generated using RMarkdown. However, the choice of output type (Word, PDF, or HTML) is up to you (you could even make slides if you want to).
+```
+
+
+-   The Raptors have changed the shots they have taken over the past two decades. With the help of this graphic, you can see the midrange shots be replaced by three point shots. The Raptors shot selections have become more efficient.
+
+```{r fig.height=8, fig.width=10, echo=FALSE, warning=FALSE}
+Final_ggplot
+```
+
+-   The Raptors have changed the focus of their shots from evenly spread out to close 2pt shots and 3pt shots.
+
+```{r echo=FALSE, warning=FALSE}
+MeanShotLength2000 <- mean(Raptors2000$distanceShot)
+MeanShotLength2020 <- mean(Raptors2020$distanceShot)
+```
+
+-   The average shot length has increased by almost a foot from 12.48ft in 2000 to 13.45ft in 2020.
+
+```{r echo=FALSE, warning=FALSE}
+R00
+R20
+```
+
+-   As you can see from the chart above, the 2020 shot selection consist of much higher efficiency shots. Three point shots and close two point shots are considered high efficiency shots because they have the highest points per attempt average. You can see how the focus changed from getting an open shot wherever it may be on the court, to getting a high efficiency shot and passing up those long two pointers.
+```{r echo = FALSE, warning=FALSE}
+#3.  (30 points) Write and document clean, efficient, reproducible code. Some notes:
+
+#    -   This code will be viewed by your direct supervisor.
+#    -   The code file should include your code to gather, join, and clean the data; the code to generate the graphic(s) presented; and your commentary on the results (so, a single .rmd file, or an .rmd file that sources an .r file).
+#    -   Your code should be clean, organized, and reproducible. Remove unnecessary/scratch/exploratory code.
+#    -   Your code should be well commented. In particular, any decisions or judgement calls made in the analysis process should be explained/justified. Sections of code should be identified even if not functionalized (including purpose, data/argument inputs, analysis outputs).
+
+#4.  (10 points) Above and Beyond. Explore the data a bit, and create a graphic that uses (or incorporates) different information than what was used above. Some notes:
+
+#    -   Create an additional graphic that incorporates at least one additional variable not previously used. The additional data should be drawn from a different dataset (function call) than the original graphic used. These two (or more) datasets may need to be joined appropriately.
+#    -   You can either add more information to the plot above, or create a different plot.
+#    -   Formatting, labelling, etc. are all important here too.
+#    -   Adding marginal densities or other "bells and whistles" might offer additional insight.
+#    -   This graphic should be included at the end of the report (after the more detailed explanations).
+#    -   You should include a brief description of the graphic (highlighting the different/additional information used).
+
+# The Deliverables
+
+#1.  Upload your report and code file(s) to GitHub by 11:59am (noon) on Friday, March 31.
+#2.  Submit (on Canvas) your report, code, and link to your GitHub repository by 11:59am (noon) on Friday, March 31.
+```
